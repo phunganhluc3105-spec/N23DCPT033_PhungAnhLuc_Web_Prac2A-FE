@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { ShoppingCart, Upload, Zap, Package, Sparkles } from "lucide-react";
+import React, { useState } from "react";
+import { Heart, Upload, Zap, Sparkles, ShoppingBag } from "lucide-react";
 import { Product } from "@/lib/api";
 import { formatVND } from "@/lib/utils";
 
@@ -18,86 +18,97 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onOpenUpload,
   isCached,
 }) => {
-  const priceNumber = typeof product.price === "number" ? product.price : parseFloat(product.price);
+  const [isLiked, setIsLiked] = useState(false);
+  const priceNumber =
+    typeof product.price === "number" ? product.price : parseFloat(product.price);
 
   return (
-    <div className="group relative rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 flex flex-col overflow-hidden">
-      {/* Image container */}
-      <div className="relative aspect-4/3 w-full bg-zinc-100 dark:bg-zinc-800/60 overflow-hidden flex items-center justify-center">
+    <div className="group relative rounded-2xl bg-[#F6F6F6] p-6 flex flex-col justify-between items-center text-center transition-all duration-300 hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1">
+      {/* Top Bar inside card: Badges & Wishlist Heart */}
+      <div className="w-full flex items-center justify-between gap-1 mb-2">
+        {/* Subtle Tech Badges */}
+        <div className="flex items-center gap-1">
+          {isCached && (
+            <span
+              className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 bg-amber-100/90 px-2 py-0.5 rounded-full"
+              title="Dữ liệu truy xuất trực tiếp từ RAM Redis Cache"
+            >
+              <Zap className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
+              Redis
+            </span>
+          )}
+          {product.imageUrl && product.imageUrl.includes("cloudinary") && (
+            <span
+              className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-sky-700 bg-sky-100/90 px-2 py-0.5 rounded-full"
+              title="Ảnh lưu trữ trên Cloudinary CDN"
+            >
+              <Sparkles className="w-2.5 h-2.5 text-sky-500" />
+              CDN
+            </span>
+          )}
+        </div>
+
+        {/* Wishlist Heart Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsLiked(!isLiked);
+          }}
+          className="p-1.5 rounded-full hover:bg-black/5 transition-colors ml-auto text-[#909090] hover:text-red-500"
+          title="Thêm vào yêu thích"
+        >
+          <Heart
+            className={`w-5 h-5 transition-colors ${
+              isLiked ? "fill-red-500 text-red-500" : ""
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* Product Image Container */}
+      <div className="relative w-full aspect-square max-h-48 mb-4 flex items-center justify-center overflow-hidden">
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="flex flex-col items-center justify-center text-zinc-400 p-4 text-center">
-            <Package className="w-12 h-12 mb-2 stroke-[1.5] text-zinc-300 dark:text-zinc-600" />
-            <span className="text-xs">Chưa có ảnh</span>
+          <div className="w-32 h-32 rounded-xl bg-zinc-200/60 flex flex-col items-center justify-center text-zinc-400">
+            <ShoppingBag className="w-10 h-10 stroke-[1.2] mb-1" />
+            <span className="text-[11px]">Chưa có ảnh</span>
           </div>
         )}
 
-        {/* Cloudinary Badge if url contains cloudinary */}
-        {product.imageUrl && product.imageUrl.includes("cloudinary") && (
-          <div className="absolute top-3 left-3 px-2 py-1 rounded-md bg-blue-500/90 text-white text-[10px] font-semibold tracking-wide backdrop-blur-md shadow-sm flex items-center gap-1">
-            <Sparkles className="w-3 h-3" />
-            Cloudinary
-          </div>
-        )}
-
-        {/* Upload Image Overlay Button */}
+        {/* Cloudinary Upload Hover Button */}
         <button
           onClick={() => onOpenUpload(product)}
-          className="absolute top-3 right-3 p-2 rounded-lg bg-black/60 hover:bg-black/80 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm flex items-center gap-1.5 shadow-md"
-          title="Tải ảnh lên Cloudinary"
+          className="absolute bottom-1 right-1 p-2 rounded-lg bg-black/80 hover:bg-black text-white text-[11px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shadow-md"
+          title="Upload ảnh sản phẩm lên Cloudinary"
         >
-          <Upload className="w-3.5 h-3.5" />
+          <Upload className="w-3 h-3" />
           <span>Đổi ảnh</span>
         </button>
       </div>
 
-      {/* Product Content */}
-      <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+      {/* Product Info */}
+      <div className="w-full flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-              {product.category?.name || "Công nghệ"}
-            </span>
-
-            {isCached && (
-              <span className="flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/50">
-                <Zap className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
-                Redis Cache
-              </span>
-            )}
-          </div>
-
-          <h3 className="font-semibold text-zinc-900 dark:text-white text-base line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+          <h3 className="text-sm font-medium text-black line-clamp-2 min-h-[2.5rem] mb-2 px-1">
             {product.name}
           </h3>
-
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-1">
-            {product.description || "Sản phẩm công nghệ cao cấp, chính hãng phân phối tại Việt Nam."}
+          <p className="text-xl font-bold text-black tracking-tight mb-4">
+            {formatVND(priceNumber)}
           </p>
         </div>
 
-        {/* Price & Action */}
-        <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
-          <div>
-            <span className="text-xs text-zinc-400 block leading-tight">Giá niêm yết</span>
-            <span className="text-base font-bold text-zinc-900 dark:text-white">
-              {formatVND(priceNumber)}
-            </span>
-          </div>
-
-          <button
-            onClick={() => onAddToCart(product)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-indigo-600 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-indigo-500 dark:hover:text-white text-white text-xs font-semibold shadow transition-all active:scale-95"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" />
-            <span>Thêm</span>
-          </button>
-        </div>
+        {/* Solid Black Button: Buy Now */}
+        <button
+          onClick={() => onAddToCart(product)}
+          className="w-full py-3 px-6 rounded-lg bg-black text-white text-xs font-semibold tracking-wide hover:bg-zinc-800 active:scale-95 transition-all shadow-sm"
+        >
+          Buy Now
+        </button>
       </div>
     </div>
   );

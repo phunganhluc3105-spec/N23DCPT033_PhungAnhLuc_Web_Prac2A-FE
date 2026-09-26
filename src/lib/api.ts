@@ -4,6 +4,13 @@ export const GATEWAY_URL =
   process.env.NEXT_PUBLIC_GATEWAY_URL ||
   "https://gateway-service-production-69d0.up.railway.app";
 
+// Khi chạy trên browser client, dùng relative path để đi qua Next.js rewrite proxy (không bao giờ bị lỗi CORS)
+export const API_BASE =
+  typeof window !== "undefined"
+    ? ""
+    : process.env.NEXT_PUBLIC_GATEWAY_URL ||
+      "https://gateway-service-production-69d0.up.railway.app";
+
 // ─── Local Storage Helper ────────────────────────
 export const getStoredToken = (): string | null => {
   if (typeof window === "undefined") return null;
@@ -103,7 +110,7 @@ export async function fetchProducts(
   });
   if (search) query.append("search", search);
 
-  const res = await fetch(`${GATEWAY_URL}/api/products?${query.toString()}`, {
+  const res = await fetch(`${API_BASE}/api/products?${query.toString()}`, {
     cache: "no-store",
   });
   if (!res.ok) {
@@ -120,7 +127,7 @@ export async function uploadProductImage(
   const formData = new FormData();
   formData.append("image", file);
 
-  const res = await fetch(`${GATEWAY_URL}/api/products/${productId}/image`, {
+  const res = await fetch(`${API_BASE}/api/products/${productId}/image`, {
     method: "POST",
     body: formData,
   });
@@ -138,7 +145,7 @@ export async function registerUser(payload: {
   email: string;
   password: string;
 }): Promise<{ success: boolean; accessToken: string; refreshToken: string; user: User }> {
-  const res = await fetch(`${GATEWAY_URL}/api/auth/register`, {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -156,7 +163,7 @@ export async function loginUser(payload: {
   email: string;
   password: string;
 }): Promise<{ success: boolean; accessToken: string; refreshToken: string; user: User }> {
-  const res = await fetch(`${GATEWAY_URL}/api/auth/login`, {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -171,7 +178,7 @@ export async function loginUser(payload: {
 
 // 5. Lấy profile
 export async function fetchProfile(token: string): Promise<{ success: boolean; user: User }> {
-  const res = await fetch(`${GATEWAY_URL}/api/auth/me`, {
+  const res = await fetch(`${API_BASE}/api/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -194,7 +201,7 @@ export async function createOrder(
     note?: string;
   }
 ): Promise<{ success: boolean; data: Order; message: string }> {
-  const res = await fetch(`${GATEWAY_URL}/api/orders`, {
+  const res = await fetch(`${API_BASE}/api/orders`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -216,7 +223,7 @@ export async function fetchOrders(
   page = 1,
   limit = 10
 ): Promise<{ success: boolean; data: Order[] }> {
-  const res = await fetch(`${GATEWAY_URL}/api/orders?page=${page}&limit=${limit}`, {
+  const res = await fetch(`${API_BASE}/api/orders?page=${page}&limit=${limit}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
